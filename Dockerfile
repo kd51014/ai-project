@@ -2,11 +2,11 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY . /app
+
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-COPY . .
+EXPOSE 80
 
-# domyślnie uruchamia Flask dev server
-CMD ["python", "run.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:80", "--workers", "4", "app:app"]

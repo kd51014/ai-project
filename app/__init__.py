@@ -43,7 +43,7 @@ def create_app():
         admin = User.query.filter_by(login='admin').first()
         if not admin:
             admin = User(login='admin', is_admin=True)
-            admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')  # fallback password
+            admin_password = os.getenv('ADMIN_PASSWORD')
             admin.set_password(admin_password)
             db.session.add(admin)
             db.session.commit()
