@@ -7,6 +7,7 @@ from app.routes.users import users_bp
 from app.models import User
 import re
 import os
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 def parse_mentions(text):
     """Convert @username mentions into profile links."""
@@ -37,16 +38,39 @@ def create_app():
     app.register_blueprint(users_bp)
 
     with app.app_context():
-        db.create_all()
+        # create_all can race when multiple gunicorn workers start at once
+        # (SQLite will raise "table ... already exists"). Catch and ignore
+        # that specific OperationalError so the app can continue booting.
+        try:
+            db.create_all()
+        except OperationalError as e:
+            msg = str(e).lower()
+            if 'already exists' in msg:
+                # Another process created tables concurrently — continue.
+                pass
+            else:
+                # Unexpected DB error — re-raise
+                raise
 
-        # Create admin user if not exists
+        # Create admin user if not exists (safe for concurrent worker boot)
         admin = User.query.filter_by(login='admin').first()
         if not admin:
             admin = User(login='admin', is_admin=True)
+            # Require ADMIN_PASSWORD to be set when creating the admin user.
+            # Do NOT provide any fallback default password.
             admin_password = os.getenv('ADMIN_PASSWORD')
+            if not admin_password:
+                raise RuntimeError(
+                    "ADMIN_PASSWORD environment variable must be set to create the admin user"
+                )
             admin.set_password(admin_password)
             db.session.add(admin)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                # Another process likely created the admin concurrently.
+                # Roll back and continue without failing the app startup.
+                db.session.rollback()
 
     return app
 
