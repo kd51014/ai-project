@@ -1,0 +1,42 @@
+name: Build and deploy to Azure Web App (Docker)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: forum:${{ github.sha }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Create .env from secrets
+        run: |
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env
+          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
+        shell: bash
+
+      - name: Build Docker image
+        run: |
+          docker build -t $IMAGE_NAME .
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+
+
+      - name: Deploy to Azure Web App (local image fallback)
+        if: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE && !secrets.DOCKERHUB_USERNAME }}
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          # When no external registry is provided we upload the built image as a container by using the local docker image name.
+          # NOTE: For this to work the Web App must support direct image deployment from the action. If this step fails, push the image to Docker Hub and use the container image path in `images:`.
+          images: ${{ env.IMAGE_NAME }}
