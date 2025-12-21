@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}Forum{% endblock %}</title>
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+<style>
+body { font-family: Arial,sans-serif; margin:0; background:#f5f6fa; color:#333; }
+header { background:#2f3640; color:white; padding:15px 30px; display:flex; justify-content:space-between; align-items:center;}
+header a { color:white; text-decoration:none; margin-left:15px; font-weight:bold; }
+header a:hover { text-decoration:underline; }
+main { max-width:900px; margin:20px auto; padding:0 20px; }
+.flash-messages ul { list-style:none; padding:0; }
+.flash-messages li { background:#ffeb3b; padding:8px; margin-bottom:10px; border-radius:5px; }
+button { padding:6px 12px; border:none; border-radius:4px; cursor:pointer; }
+button.primary { background:#4CAF50; color:white; }
+button.primary:hover { background:#45a049; }
+button.secondary { background:#3498db; color:white; }
+button.secondary:hover { background:#2980b9; }
+a.button-link { display:inline-block; padding:6px 12px; background:#3498db; color:white; text-decoration:none; border-radius:4px; margin-top:5px; }
+a.button-link:hover { background:#2980b9; }
+ul.posts, ul.comments { list-style:none; padding-left:0; }
+ul.posts li, ul.comments li { background:white; padding:15px; margin-bottom:15px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+img { max-width:100%; border-radius:4px; margin-top:10px; }
+#addPostModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+#addPostModal form { background:white; padding:20px; border-radius:6px; width:90%; max-width:500px; }
+textarea, input[type="text"], input[type="file"] { width:100%; padding:6px; margin-top:5px; box-sizing:border-box; }
+</style>
+</head>
+<body>
+<header>
+  <div><a href="/">Forum</a></div>
+  <div>
+    {% if session.user_login %}
+      <span>Logged in as <b>{{ session.user_login }}</b></span>
+      <a href="/users/edit">Profile</a>
+      <a href="/auth/logout">Log out</a>
+    {% else %}
+      <a href="/auth/login">Log in</a>
+      <a href="/auth/register">Register</a>
+    {% endif %}
+  </div>
+</header>
+
+<div class="flash-messages">
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for msg in messages %}<li>{{ msg }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+</div>
+
+<main>{% block content %}{% endblock %}</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('addPostModal');
+  const showBtn = document.getElementById('showAddPost');
+  const hideBtn = document.getElementById('hideAddPost');
+  if(showBtn) showBtn.onclick = () => modal.style.display='flex';
+  if(hideBtn) hideBtn.onclick = () => modal.style.display='none';
+  if(modal) modal.onclick = (e) => { if(e.target===modal) modal.style.display='none'; };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<li>
+    <p>{{ comment.content | parse_mentions | safe }}</p>
+    <p>
+      <small>
+        added by: <a href="/users/{{ comment.author.login }}">{{ comment.author.login }}</a>
+        {% if comment.created_at %}| {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+      </small>
+    </p>
+
+    <form method="POST">
+        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+        <textarea name="content" required></textarea><br>
+        <button type="submit">Reply</button>
+    </form>
+
+    {% if comment.replies %}
+        <ul>
+            {% for reply in comment.replies %}
+                {% set comment = reply %}
+                {% include "posts/_comment.html" %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

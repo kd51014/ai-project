@@ -1,0 +1,33 @@
+<a href="/">← Back to home</a>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for msg in messages %}
+        <li>{{ msg }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<h2>Edit profile</h2>
+
+<form method="POST" enctype="multipart/form-data">
+  <label>Bio:<br>
+    <textarea name="bio" rows="4" cols="40">{{ user.bio or '' }}</textarea>
+  </label><br><br>
+
+  <label>Profile picture:</label><br>
+
+  {% if user.profile_image %}
+    <img src="{{ user.profile_image }}" alt="profile picture">
+  {% else %}
+    <span>No picture</span><br>
+  {% endif %}
+
+  <input type="file" name="profile_image" accept="image/*"><br><br>
+
+  <button type="submit">Save</button>
+</form>
+
+<a href="/users/{{ user.login }}">← Back to profile</a>

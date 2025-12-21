@@ -1,0 +1,40 @@
+<a href="/">← Back to home</a>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for msg in messages %}
+        <li>{{ msg }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<h2>User profile: {{ user.login }}</h2>
+
+{% if user.profile_image %}
+  <img src="{{ user.profile_image }}" alt="profile picture">
+{% endif %}
+
+<p><b>Bio:</b> {{ user.bio or 'No bio provided.' }}</p>
+
+<hr>
+
+<h3>User posts:</h3>
+
+<ul>
+{% for post in posts %}
+  <li>
+    <a href="/post/{{ post.id }}">{{ post.title }}</a>
+    <small>
+      ({{ post.created_at.strftime('%Y-%m-%d %H:%M') if post.created_at else '' }})
+    </small>
+  </li>
+{% else %}
+  <li>No posts.</li>
+{% endfor %}
+</ul>
+
+{% if session.user_id == user.id %}
+  <a href="/users/edit">Edit profile</a>
+{% endif %}

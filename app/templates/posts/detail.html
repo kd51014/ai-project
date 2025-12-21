@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Forum</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+<body>
+
+<h1>{{ post.title }}</h1>
+
+{% if session.user_id and current_user.is_admin %}
+<form action="{{ url_for('posts.delete_post', post_id=post.id) }}" method="post" style="display:inline;">
+    <button type="submit" onclick="return confirm('Are you sure you want to delete this post?');">Delete</button>
+</form>
+{% endif %}
+
+
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for msg in messages %}
+        <li>{{ msg }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<p>{{ post.content | parse_mentions | safe }}</p>
+<p>
+  <small>
+    added by:
+    <a href="/users/{{ post.author.login }}">{{ post.author.login }}</a>
+    | {{ post.created_at.strftime('%Y-%m-%d %H:%M') if post.created_at else '' }}
+  </small>
+</p>
+
+<hr>
+
+<h2>Comments</h2>
+
+<ul>
+{% for comment in comments %}
+    {% include "posts/_comment.html" %}
+{% endfor %}
+</ul>
+
+<hr>
+
+<h3>Add a comment</h3>
+
+<form method="POST">
+    <textarea name="content" required></textarea><br>
+    <button type="submit">Reply</button>
+</form>
+
+<br>
+<a href="/">← Back</a>
+
+</body>
+</html>
