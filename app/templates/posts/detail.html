@@ -2,77 +2,82 @@
 {% block title %}{{ post.title }}{% endblock %}
 
 {% block content %}
-<h1>{{ post.title }}</h1>
+<article class="post-detail">
+  <header>
+    <h1>{{ post.title }}</h1>
 
-{% if session.user_id and current_user.is_admin %}
-<form method="POST" action="{{ url_for('posts.delete_post', post_id=post.id) }}">
-  <button class="secondary"
-    onclick="return confirm('Delete this post?');">
-    Delete
-  </button>
-</form>
-{% endif %}
+    <div class="post-meta">
+      {% if post.author %}
+        <a href="{{ url_for('users.profile', login=post.author.login) }}">
+          {{ post.author.login }}
+        </a>
+      {% else %}
+        <em>unknown</em>
+      {% endif %}
+      • {{ post.created_at.strftime('%Y-%m-%d %H:%M') if post.created_at }}
+    </div>
+	
+	{% if post.image_url %}
+		<img src="{{ post.image_url }}" alt="Post image" class="post-image">
+	{% endif %}
 
-<p>
-  <small>
-    by 
-    {% if post.author and post.author.login %}
-      <a href="{{ url_for('users.profile', login=post.author.login) }}">{{ post.author.login }}</a>
-    {% else %}
-      <em>unknown</em>
+    {% if session.user_id and current_user.is_admin %}
+    <form method="POST" action="{{ url_for('posts.delete_post', post_id=post.id) }}">
+      <button class="btn btn-danger"
+        onclick="return confirm('Usunąć post?');">
+        Usuń
+      </button>
+    </form>
     {% endif %}
-    |
-    {{ post.created_at.strftime('%Y-%m-%d %H:%M') if post.created_at }}
-  </small>
-</p>
+  </header>
 
-<div class="post-content">
-  <p>{{ post.content | parse_mentions | safe }}</p>
-</div>
+  <div class="post-content">
+    {{ post.content | parse_mentions | safe }}
+  </div>
 
-{% if post.hashtags %}
-  <p class="post-hashtags">
+  {% if post.hashtags %}
+  <div class="hashtags">
     {% for tag in post.hashtags %}
-      <a href="{{ url_for('posts.posts_by_hashtag', name=tag.name) }}">#{{ tag.name }}</a>
-      {% if not loop.last %} {% endif %}
+      <a href="{{ url_for('posts.posts_by_hashtag', name=tag.name) }}">
+        #{{ tag.name }}
+      </a>
     {% endfor %}
-  </p>
-{% endif %}
+  </div>
+  {% endif %}
 
-<div class="reactions">
-  <form action="{{ url_for('posts.react', post_id=post.id, reaction_type='plus') }}" method="post">
-    <button type="submit" class="primary" {% if your_reaction == 'plus' %}disabled{% endif %}>+
-      {% if plus > 0 %} {{ plus }}{% endif %}
-    </button>
+  <div class="reactions">
+    <form method="POST" action="{{ url_for('posts.react', post_id=post.id, reaction_type='plus') }}">
+      <button class="btn btn-primary" {% if your_reaction == 'plus' %}disabled{% endif %}>
+        👍 {{ plus if plus > 0 }}
+      </button>
+    </form>
+
+    <form method="POST" action="{{ url_for('posts.react', post_id=post.id, reaction_type='minus') }}">
+      <button class="btn btn-secondary" {% if your_reaction == 'minus' %}disabled{% endif %}>
+        👎 {{ minus if minus > 0 }}
+      </button>
+    </form>
+  </div>
+</article>
+
+<section class="comments-section">
+  <h2>Komentarze</h2>
+
+  <ul class="comments">
+    {% for comment in comments %}
+      {% include "posts/_comment.html" %}
+    {% else %}
+      <li class="empty">Brak komentarzy</li>
+    {% endfor %}
+  </ul>
+
+  {% if session.user_id %}
+  <form method="POST" class="comment-form">
+    <textarea name="content" placeholder="Dodaj komentarz..." required></textarea>
+    <button class="btn btn-primary">Dodaj</button>
   </form>
-
-  <form action="{{ url_for('posts.react', post_id=post.id, reaction_type='minus') }}" method="post">
-    <button type="submit" class="secondary" {% if your_reaction == 'minus' %}disabled{% endif %}>-
-      {% if minus > 0 %} {{ minus }}{% endif %}
-    </button>
-  </form>
-</div>
-
-<hr>
-
-<h2>Comments</h2>
-
-<ul class="comments">
-{% for comment in comments %}
-  {% include "posts/_comment.html" %}
-{% else %}
-  <li>No comments yet.</li>
-{% endfor %}
-</ul>
-
-{% if session.user_id %}
-<hr>
-<h3>Add a comment</h3>
-<form method="POST">
-  <textarea name="content" required></textarea><br>
-  <button class="primary">Reply</button>
-</form>
-{% else %}
-<p><a href="/auth/login">Log in</a> to comment.</p>
-{% endif %}
+  {% else %}
+    <p><a href="/auth/login">Zaloguj się</a>, aby komentować.</p>
+  {% endif %}
+</section>
 {% endblock %}

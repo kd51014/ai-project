@@ -1,44 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
 <meta charset="UTF-8">
 <title>{% block title %}Forum{% endblock %}</title>
-<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-
+<link rel="icon" href="/static/favicon.ico">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 
 <body>
-<header>
-  <div><a href="/">Forum</a></div>
-  <div>
+<header class="site-header">
+  <a href="/" class="logo">Forum</a>
+
+  <nav>
     {% if session.user_login %}
-      <span>Logged in as <b>{{ session.user_login }}</b></span>
-      <a href="/users/edit">Profile</a>
-      <a href="/auth/logout">Log out</a>
+      <span>{{ session.user_login }}</span>
+      <a href="/users/edit">Profil</a>
+      <a href="/auth/logout">Wyloguj</a>
+	  <button id="toggleDarkMode" class="btn btn-secondary">🌙 Dark Mode</button>
     {% else %}
-      <a href="/auth/login">Log in</a>
-      <a href="/auth/register">Register</a>
+      <a href="/auth/login">Logowanie</a>
+      <a href="/auth/register">Rejestracja</a>
     {% endif %}
-  </div>
+  </nav>
 </header>
 
-<div class="flash-messages">
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-<ul>
-{% for msg in messages %}
-  <li>{{ msg }}</li>
-{% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
+{% if get_flashed_messages() %}
+<div class="flash">
+  {% for msg in get_flashed_messages() %}
+    <p>{{ msg }}</p>
+  {% endfor %}
 </div>
+{% endif %}
 
-<main>
-{% block content %}{% endblock %}
+<main class="container">
+  {% block content %}{% endblock %}
 </main>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('addPostModal');
@@ -63,5 +59,24 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleBtn = document.getElementById('toggleDarkMode');
+  const body = document.body;
+
+  if(localStorage.getItem('darkMode') === 'true') {
+    body.classList.add('dark');
+    toggleBtn.textContent = '☀️ Light Mode';
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    body.classList.toggle('dark');
+    const isDark = body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    toggleBtn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+  });
+});
+</script>
+
 </body>
 </html>

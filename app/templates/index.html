@@ -1,77 +1,48 @@
 {% extends "base.html" %}
-
 {% block title %}Forum{% endblock %}
 
 {% block content %}
+<section class="home">
+  <button id="showAddPost" class="btn btn-primary">➕ Nowy post</button>
 
-<button id="showAddPost">Add post +</button>
+  <div id="addPostModal" class="modal">
+    <form method="POST" enctype="multipart/form-data" class="modal-content">
+      <h2>Nowy post</h2>
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul>
-      {% for msg in messages %}
-        <li>{{ msg }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+      <input type="text" name="title" placeholder="Tytuł" required>
+      <textarea name="content" placeholder="Treść" required></textarea>
+      <input type="file" name="image" accept="image/*">
 
-<div id="addPostModal" style="display:none;">
-  <form method="POST" enctype="multipart/form-data" id="addPostForm">
-    <h2>New post</h2>
-    <label>Title:<br><input type="text" name="title" required></label><br>
-    <label>Content:<br><textarea name="content" required></textarea></label><br>
-    <label>Attach image:<br><input type="file" name="image" accept="image/*"></label><br>
-    <button type="submit">Add post</button>
-    <button type="button" id="hideAddPost">Cancel</button>
-  </form>
-</div>
+      <div class="modal-actions">
+        <button class="btn btn-primary">Dodaj</button>
+        <button type="button" id="hideAddPost" class="btn btn-secondary">Anuluj</button>
+      </div>
+    </form>
+  </div>
 
-<hr>
-
-<h2>Posts</h2>
-{% if hashtags %}
-  <div>
-    <b>Top hashtags:</b>
+  {% if hashtags %}
+  <div class="hashtags">
     {% for tag in hashtags %}
       <a href="/hashtag/{{ tag.name }}">#{{ tag.name }}</a>
     {% endfor %}
   </div>
-{% endif %}
+  {% endif %}
 
-<ul>
-{% for post in posts %}
-    <li>
-        <a href="/post/{{ post.id }}">{{ post.title }}</a><br>
-        <small>added by: <a href="/users/{{ post.author.login }}">{{ post.author.login }}</a> | {{ post.created_at.strftime('%Y-%m-%d %H:%M') if post.created_at else '' }}</small>
-        {% if post.image_url %}
-          <br>
-          <img src="{{ post.image_url }}" alt="post image">
-        {% endif %}
-        <div class="post-content">
-          <p>{{ post.content | parse_mentions | safe }}</p>
-        </div>
-        {% if post.hashtags %}
-          <div>
-            {% for tag in post.hashtags %}
-              <a href="/hashtag/{{ tag.name }}">#{{ tag.name }}</a>
-            {% endfor %}
-          </div>
-        {% endif %}
-        <div class="reactions">
-          <form action="{{ url_for('posts.react', post_id=post.id, reaction_type='plus') }}" method="post">
-            <button type="submit" class="primary" {% if your_reactions[post.id] == 'plus' %}disabled{% endif %}>+
-              {% if reactions_map[post.id]['plus'] > 0 %} {{ reactions_map[post.id]['plus'] }}{% endif %}
-            </button>
-          </form>
-          <form action="{{ url_for('posts.react', post_id=post.id, reaction_type='minus') }}" method="post">
-            <button type="submit" class="secondary" {% if your_reactions[post.id] == 'minus' %}disabled{% endif %}>-
-              {% if reactions_map[post.id]['minus'] > 0 %} {{ reactions_map[post.id]['minus'] }}{% endif %}
-            </button>
-          </form>
-        </div>
+  <ul class="posts">
+    {% for post in posts %}
+    <li class="post-card">
+      <a href="/post/{{ post.id }}"><h3>{{ post.title }}</h3></a>
+      <small>
+        {{ post.author.login }} • {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+      </small>
+	  
+	  {% if post.image_url %}
+		<img src="{{ post.image_url }}" alt="Post image" class="post-image">
+	  {% endif %}
+
+      <p>{{ post.content | parse_mentions | safe }}</p>
     </li>
-{% endfor %}
-</ul>
-
+    {% endfor %}
+  </ul>
+</section>
 {% endblock %}

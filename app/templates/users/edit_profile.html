@@ -1,26 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Edit profile{% endblock %}
+{% block title %}Edytuj profil{% endblock %}
 
 {% block content %}
-<h2>Edit profile</h2>
+<div class="profile-edit">
+  <h1>Edytuj profil</h1>
 
-<form method="POST" enctype="multipart/form-data">
-  <label>Bio:
-    <textarea name="bio">{{ user.bio or '' }}</textarea>
-  </label>
+  <form method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label>Bio</label>
+      <textarea name="bio">{{ user.bio or '' }}</textarea>
+    </div>
 
-  <label>Profile picture:</label>
+    <div class="form-group">
+      <label>Avatar</label>
 
-  {% if user.profile_image %}
-    <img src="{{ user.profile_image }}" width="120">
-  {% else %}
-    <p>No picture</p>
-  {% endif %}
+      {% if user.profile_image %}
+        <img src="{{ user.profile_image }}" class="avatar-preview">
+      {% else %}
+        <p>Brak zdjęcia</p>
+      {% endif %}
 
-  <input type="file" name="profile_image" accept="image/*">
+      <input type="file" name="profile_image" accept="image/*">
+    </div>
 
-  <br><br>
-  <button class="primary">Save</button>
-  <a class="button-link" href="/users/{{ user.login }}">Cancel</a>
-</form>
+    <div class="form-actions">
+      <button class="btn btn-primary">Zapisz</button>
+      <a class="btn btn-link" href="/users/{{ user.login }}">Anuluj</a>
+    </div>
+  </form>
+</div>
 {% endblock %}

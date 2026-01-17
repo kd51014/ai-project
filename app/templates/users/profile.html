@@ -1,31 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Profile – {{ user.login }}{% endblock %}
+{% block title %}Profil – {{ user.login }}{% endblock %}
 
 {% block content %}
-<h2>{{ user.login }}</h2>
+<section class="profile">
+  <div class="profile-header">
+    {% if user.profile_image %}
+      <img src="{{ user.profile_image }}" class="avatar">
+    {% endif %}
 
-{% if user.profile_image %}
-  <img src="{{ user.profile_image }}" width="150">
-{% endif %}
+    <h1>{{ user.login }}</h1>
+    <p>{{ user.bio or 'Brak opisu.' }}</p>
+  </div>
 
-<p><b>Bio:</b><br>{{ user.bio or 'No bio provided.' }}</p>
+  <h2>Posty użytkownika</h2>
 
-<hr>
+  <ul class="posts-list">
+    {% for post in posts %}
+    <li>
+      <a href="/post/{{ post.id }}">{{ post.title }}</a>
+      <small>{{ post.created_at.strftime('%Y-%m-%d %H:%M') if post.created_at }}</small>
+    </li>
+    {% else %}
+      <li>Brak postów</li>
+    {% endfor %}
+  </ul>
 
-<h3>User posts</h3>
-
-<ul class="posts">
-{% for post in posts %}
-  <li>
-    <a href="/post/{{ post.id }}"><b>{{ post.title }}</b></a><br>
-    <small>{{ post.created_at.strftime('%Y-%m-%d %H:%M') if post.created_at }}</small>
-  </li>
-{% else %}
-  <li>No posts.</li>
-{% endfor %}
-</ul>
-
-{% if session.user_id == user.id %}
-  <a class="button-link" href="/users/edit">Edit profile</a>
-{% endif %}
+  {% if session.user_id == user.id %}
+    <a class="btn btn-primary" href="/users/edit">Edytuj profil</a>
+  {% endif %}
+</section>
 {% endblock %}
