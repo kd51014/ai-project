@@ -36,10 +36,7 @@ class Post(db.Model):
         cascade="all, delete-orphan",
         lazy=True
     )
-    # When a Post is deleted, its reactions should be removed as well.
-    # Add cascade so SQLAlchemy will delete Reaction objects instead of
-    # trying to NULL out the foreign key (which is NOT NULL and causes
-    # IntegrityError).
+
     reactions = db.relationship(
         'Reaction',
         backref='post',

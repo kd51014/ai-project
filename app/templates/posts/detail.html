@@ -13,14 +13,45 @@
 </form>
 {% endif %}
 
-<p>{{ post.content | parse_mentions | safe }}</p>
-
 <p>
   <small>
-    by <a href="/users/{{ post.author.login }}">{{ post.author.login }}</a>
-    | {{ post.created_at.strftime('%Y-%m-%d %H:%M') if post.created_at }}
+    by 
+    {% if post.author and post.author.login %}
+      <a href="{{ url_for('users.profile', login=post.author.login) }}">{{ post.author.login }}</a>
+    {% else %}
+      <em>unknown</em>
+    {% endif %}
+    |
+    {{ post.created_at.strftime('%Y-%m-%d %H:%M') if post.created_at }}
   </small>
 </p>
+
+<div class="post-content">
+  <p>{{ post.content | parse_mentions | safe }}</p>
+</div>
+
+{% if post.hashtags %}
+  <p class="post-hashtags">
+    {% for tag in post.hashtags %}
+      <a href="{{ url_for('posts.posts_by_hashtag', name=tag.name) }}">#{{ tag.name }}</a>
+      {% if not loop.last %} {% endif %}
+    {% endfor %}
+  </p>
+{% endif %}
+
+<div class="reactions">
+  <form action="{{ url_for('posts.react', post_id=post.id, reaction_type='plus') }}" method="post">
+    <button type="submit" class="primary" {% if your_reaction == 'plus' %}disabled{% endif %}>+
+      {% if plus > 0 %} {{ plus }}{% endif %}
+    </button>
+  </form>
+
+  <form action="{{ url_for('posts.react', post_id=post.id, reaction_type='minus') }}" method="post">
+    <button type="submit" class="secondary" {% if your_reaction == 'minus' %}disabled{% endif %}>-
+      {% if minus > 0 %} {{ minus }}{% endif %}
+    </button>
+  </form>
+</div>
 
 <hr>
 
